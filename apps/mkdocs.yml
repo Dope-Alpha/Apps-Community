@@ -1,25 +1,26 @@
 #!/bin/bash
 #
-# Title:      Readarr
-# Author(s):  
-# URL:        https://hub.docker.com/r/hotio/readarr
-# GNU:        
+# Title:      mkdocs
+# Author(s):  smashingtags
+# URL:        https://github.com/smashingtags/mkdocs-material
+# Run After Install: sudo docker run --rm -it -v /opt/appdata/mkdocs:/docs smashingtags/mkdocs new .
 ################################################################################
 ---
 - hosts: localhost
   gather_facts: false
   tasks:
     # FACTS #######################################################################
+    
     - name: 'Set Known Facts'
       set_fact:
-        pgrole: 'readarr'
-        intport: '8787'
-        extport: '8787'
-        image: 'hotio/readarr:unstable'
+        pgrole: 'mkdocs'
+        intport: '8000'
+        extport: '8007'
+        image: 'smashingtags/mkdocs:latest'
 
     # CORE (MANDATORY) ############################################################
     - name: 'Including cron job'
-      include_tasks: '/opt/coreapps/apps/_core.yml'
+      include_tasks: '/opt/communityapps/apps/_core.yml'
 
     # LABELS ######################################################################
     - name: 'Adding Traefik'
@@ -43,8 +44,7 @@
       set_fact:
         pg_volumes:
           - '/etc/localtime:/etc/localtime:ro'
-          - '/opt/appdata/{{pgrole}}:/config'
-          - '{{path.stdout}}:{{path.stdout}}'
+          - '/opt/appdata/{{pgrole}}:/docs'
 
     - name: 'Setting {{pgrole}} ENV'
       set_fact:

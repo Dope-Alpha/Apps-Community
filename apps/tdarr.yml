@@ -1,8 +1,9 @@
 #!/bin/bash
 #
-# Author(s):  hawkinzzz
-# URL:        https://pgblitz.com - http://github.pgblitz.com
-# GNU:        General Public License v3.0
+# Title:      Tdarr
+# Author(s):  HaveAGitGat
+# URL:        https://github.com/HaveAGitGat/Tdarr
+# GNU:        GPL-3.0
 ################################################################################
 ---
 - hosts: localhost
@@ -11,10 +12,10 @@
     # FACTS #######################################################################
     - name: 'Set Known Facts'
       set_fact:
-        pgrole: 'oscarr'
-        intport: '5656'
-        extport: '5656'
-        image: 'morpheus65535/oscarr:latest'
+        pgrole: 'tdarr'
+        intport: '8265'
+        extport: '8265'
+        image: 'haveagitgat/tdarr_aio:latest'
 
     # CORE (MANDATORY) ############################################################
     - name: 'Including cron job'
@@ -24,9 +25,9 @@
     - name: 'Adding Traefik'
       set_fact:
         pg_labels:
+          traefik.frontend.auth.forward.address: '{{gauth}}'
           traefik.enable: 'true'
           traefik.port: '{{intport}}'
-          traefik.frontend.auth.forward.address: '{{gauth}}'
           traefik.frontend.rule: 'Host:{{pgrole}}.{{domain.stdout}}{{tldset}}{{cname}}'
           traefik.frontend.headers.SSLHost: '{{domain.stdout}}'
           traefik.frontend.headers.SSLRedirect: 'true'
@@ -41,14 +42,15 @@
     - name: 'Setting {{pgrole}} Volumes'
       set_fact:
         pg_volumes:
-          - '/opt/appdata/{{pgrole}}/data:/oscarr/data'
-
+          - '/etc/localtime:/etc/localtime:ro'
+          - '/opt/appdata/{{pgrole}}/Documents:/home/Tdarr/Documents/Tdarr'
+          - '/opt/appdata/{{pgrole}}/Database:/var/lib/mongodb'
+          - '/opt/appdata/{{pgrole}}/Media:/home/Tdarr/Media'
+          - '{{path.stdout}}:{{path.stdout}}'
+          
     - name: 'Setting {{pgrole}} ENV'
       set_fact:
         pg_env:
-          PUID: '1000'
-          PGID: '1000'
-          TZ: 'America/New_York'
 
     # MAIN DEPLOYMENT #############################################################
     - name: 'Deploying {{pgrole}}'

@@ -1,25 +1,26 @@
 #!/bin/bash
 #
-# Title:      Readarr
-# Author(s):  
-# URL:        https://hub.docker.com/r/hotio/readarr
-# GNU:        
+# Title:      dizcuetv
+# Author(s):  smashingtags
+# URL:        https://hub.docker.com/r/vexorian/dizquetv https://github.com/vexorian/dizquetv
+# GNU:        General Public License v3.0
 ################################################################################
 ---
 - hosts: localhost
   gather_facts: false
   tasks:
     # FACTS #######################################################################
+
     - name: 'Set Known Facts'
       set_fact:
-        pgrole: 'readarr'
-        intport: '8787'
-        extport: '8787'
-        image: 'hotio/readarr:unstable'
+        pgrole: 'dizquetv'
+        intport: '8000'
+        extport: '8503'
+        image: 'vexorian/dizquetv'
 
     # CORE (MANDATORY) ############################################################
     - name: 'Including cron job'
-      include_tasks: '/opt/coreapps/apps/_core.yml'
+      include_tasks: '/opt/communityapps/apps/_core.yml'
 
     # LABELS ######################################################################
     - name: 'Adding Traefik'
@@ -42,24 +43,24 @@
     - name: 'Setting {{pgrole}} Volumes'
       set_fact:
         pg_volumes:
+          - '/opt/appdata/{{pgrole}}:/home/node/app/.dizquetv'
           - '/etc/localtime:/etc/localtime:ro'
-          - '/opt/appdata/{{pgrole}}:/config'
-          - '{{path.stdout}}:{{path.stdout}}'
 
-    - name: 'Setting {{pgrole}} ENV'
+    - name: 'Setting Environment'
       set_fact:
         pg_env:
           PUID: '1000'
           PGID: '1000'
 
     # MAIN DEPLOYMENT #############################################################
+
     - name: 'Deploying {{pgrole}}'
       docker_container:
         name: '{{pgrole}}'
         image: '{{image}}'
         pull: yes
         published_ports:
-          - '{{ports.stdout}}{{extport}}:{{intport}}'
+          - '{{extport}}:{{intport}}'
         volumes: '{{pg_volumes}}'
         env: '{{pg_env}}'
         restart_policy: unless-stopped

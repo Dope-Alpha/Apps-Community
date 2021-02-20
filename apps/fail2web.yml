@@ -1,9 +1,9 @@
 #!/bin/bash
 #
-# Title:      Readarr
-# Author(s):  
-# URL:        https://hub.docker.com/r/hotio/readarr
-# GNU:        
+# Title:      fail2web
+# Author(s):  smashingtags
+# URL:        https://github.com/Sean-Der/fail2web
+# GNU:        General Public License v3.0
 ################################################################################
 ---
 - hosts: localhost
@@ -12,14 +12,14 @@
     # FACTS #######################################################################
     - name: 'Set Known Facts'
       set_fact:
-        pgrole: 'readarr'
-        intport: '8787'
-        extport: '8787'
-        image: 'hotio/readarr:unstable'
+        pgrole: 'fail2web'
+        intport: '80'
+        extport: '8088'
+        image: 'monogramm/docker-fail2web'
 
     # CORE (MANDATORY) ############################################################
     - name: 'Including cron job'
-      include_tasks: '/opt/coreapps/apps/_core.yml'
+      include_tasks: '/opt/communityapps/apps/_core.yml'
 
     # LABELS ######################################################################
     - name: 'Adding Traefik'
@@ -43,7 +43,8 @@
       set_fact:
         pg_volumes:
           - '/etc/localtime:/etc/localtime:ro'
-          - '/opt/appdata/{{pgrole}}:/config'
+          - '/etc/timezone:/etc/timezone:ro'
+          - '/opt/appdata/{{pgrole}}/srv/fail2web/:/srv/fail2web/'
           - '{{path.stdout}}:{{path.stdout}}'
 
     - name: 'Setting {{pgrole}} ENV'
@@ -51,6 +52,9 @@
         pg_env:
           PUID: '1000'
           PGID: '1000'
+          FAIL2REST_ADDR: 'http://fail2rest:5001'
+          FAIL2REST_USER: 'fail2web-admin'
+          FAIL2REST_PASSWD: 'youshouldoverwritethiswithsomethingrandomlygenerated'
 
     # MAIN DEPLOYMENT #############################################################
     - name: 'Deploying {{pgrole}}'
